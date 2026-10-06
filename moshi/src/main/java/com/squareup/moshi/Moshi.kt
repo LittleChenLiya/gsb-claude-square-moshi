@@ -119,6 +119,26 @@ public class Moshi private constructor(builder: Builder) {
   }
 
   /**
+   * Returns an [AdapterLookupPlan] for [type] qualified by [annotations].
+   *
+   * Qualifiers are normalized through [QualifierKey], so an annotation's type and attribute
+   * values decide its identity: equivalent qualifier instances share one identity, while the same
+   * annotation with different parameters yields different identities.
+   * [AdapterLookupPlan.factories] lists the candidate factories in their original registration
+   * order.
+   *
+   * This only builds the lookup plan: no factory is asked to create an adapter, and neither
+   * [JsonAdapter.fromJson] nor [JsonAdapter.toJson] is ever invoked. Use [adapter] to create an
+   * actual adapter.
+   */
+  @CheckReturnValue
+  public fun adapterLookupPlan(type: Type, annotations: Set<Annotation>): AdapterLookupPlan {
+    val cleanedType = type.canonicalize().removeSubtypeWildcard()
+    val qualifiers = annotations.map { QualifierKey.of(it) }.distinct()
+    return AdapterLookupPlan(cleanedType, qualifiers, factories.toList())
+  }
+
+  /**
    * @param fieldName An optional field name associated with this type. The field name is used as a
    *   hint for better adapter lookup error messages for nested structures.
    */
