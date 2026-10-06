@@ -253,6 +253,23 @@ public sealed class JsonReader : Closeable {
   }
 
   /**
+   * Copies the path-tracking state from [source] into this reader. Used by forwarding readers that
+   * delegate all of the actual parsing to another reader and only need their reported [path] to
+   * stay in sync.
+   */
+  internal fun copyPathStateFrom(source: JsonReader) {
+    if (source.stackSize > scopes.size) {
+      scopes = source.scopes.copyOf(source.scopes.size)
+      pathNames = source.pathNames.copyOf(source.pathNames.size)
+      pathIndices = source.pathIndices.copyOf(source.pathIndices.size)
+    }
+    stackSize = source.stackSize
+    System.arraycopy(source.scopes, 0, scopes, 0, stackSize)
+    System.arraycopy(source.pathNames, 0, pathNames, 0, stackSize)
+    System.arraycopy(source.pathIndices, 0, pathIndices, 0, stackSize)
+  }
+
+  /**
    * Throws a new IO exception with the given message and a context snippet with this reader's
    * content.
    */
