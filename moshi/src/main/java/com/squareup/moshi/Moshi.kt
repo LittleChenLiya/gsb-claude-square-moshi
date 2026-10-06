@@ -167,6 +167,29 @@ public class Moshi private constructor(builder: Builder) {
     }
   }
 
+  /**
+   * Returns a plan describing how [adapter] would resolve a JSON adapter for [type] with
+   * [annotations]: the normalized qualifier identities (where the annotation type and its
+   * attribute values jointly determine identity) and the candidate factories in their original
+   * registration order.
+   *
+   * This only builds the plan: it never creates adapters and never calls [JsonAdapter.fromJson]
+   * or [JsonAdapter.toJson].
+   */
+  @JvmOverloads
+  @CheckReturnValue
+  public fun lookupPlan(
+    type: Type,
+    annotations: Set<Annotation> = NO_ANNOTATIONS,
+  ): AdapterLookupPlan {
+    val cleanedType = type.canonicalize().removeSubtypeWildcard()
+    val qualifiers = LinkedHashSet<QualifierIdentity>(annotations.size)
+    for (annotation in annotations) {
+      qualifiers += QualifierIdentity.of(annotation)
+    }
+    return AdapterLookupPlan(cleanedType, qualifiers.toList(), factories.toList())
+  }
+
   @CheckReturnValue
   public fun <T> nextAdapter(
     skipPast: JsonAdapter.Factory,
