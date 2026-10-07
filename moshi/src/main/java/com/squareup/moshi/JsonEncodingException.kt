@@ -18,4 +18,8 @@ package com.squareup.moshi
 import java.io.IOException
 
 /** Thrown when the data being parsed is not encoded as valid JSON. */
-public class JsonEncodingException(message: String?) : IOException(message)
+public class JsonEncodingException : IOException {
+  public constructor(message: String?) : super(message)
+
+  public constructor(message: String?, cause: Throwable?) : super(message, cause)
+}

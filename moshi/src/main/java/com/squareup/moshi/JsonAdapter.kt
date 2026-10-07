@@ -70,6 +70,38 @@ public abstract class JsonAdapter<T> {
     return result
   }
 
+  /**
+   * Returns an iterator of consecutive top-level JSON values decoded from [reader] with this
+   * adapter, such as the values in a stream of newline-delimited JSON.
+   *
+   * Each value is produced by a single call to [fromJson], so later values stay buffered in
+   * [reader] and the caller may keep using it after iteration. A stream that contains only
+   * whitespace ends normally; a truncated value fails with a [JsonEncodingException] that
+   * identifies the value's index and preserves the original failure as its cause.
+   *
+   * The returned iterator borrows [reader]: closing it does not close the reader or its source. The
+   * caller remains responsible for any cleanup.
+   */
+  @CheckReturnValue
+  public fun jsonValues(reader: JsonReader): JsonValueIterator<T> =
+    JsonValueIterator(this, reader, closeSource = false)
+
+  /**
+   * Returns an iterator of consecutive top-level JSON values decoded from [source] with this
+   * adapter, such as the values in a stream of newline-delimited JSON.
+   *
+   * Each value is produced by a single call to [fromJson], so later values stay buffered in
+   * [source]. A stream that contains only whitespace ends normally; a truncated value fails with a
+   * [JsonEncodingException] that identifies the value's index and preserves the original failure as
+   * its cause.
+   *
+   * The returned iterator owns [source]: closing the iterator closes the underlying reader and the
+   * source.
+   */
+  @CheckReturnValue
+  public fun jsonValues(source: BufferedSource): JsonValueIterator<T> =
+    JsonValueIterator(this, JsonReader.of(source), closeSource = true)
+
   /** Encodes the given [value] with the given [writer]. */
   @Throws(IOException::class) public abstract fun toJson(writer: JsonWriter, value: T)
 

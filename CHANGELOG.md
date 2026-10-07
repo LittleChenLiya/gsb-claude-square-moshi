@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-* None yet.
+* New `JsonAdapter.jsonValues(JsonReader)` and `JsonAdapter.jsonValues(BufferedSource)` helpers
+  return a `JsonValueIterator` that reads consecutive top-level JSON values (such as
+  newline-delimited JSON) one value at a time. Whitespace-only input ends iteration normally; a
+  truncated value fails with a `JsonEncodingException` that identifies the value's index and keeps
+  the original failure as its cause. Iterators created from a `JsonReader` borrow it and never
+  close its source; iterators created from a `BufferedSource` own and close that source.
 
 
 ## [2.0.0-alpha.1] - 2026-01-28
