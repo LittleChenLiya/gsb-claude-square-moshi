@@ -24,6 +24,8 @@ import okio.Buffer
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.IOException
+import okio.Source
+import okio.buffer
 import org.intellij.lang.annotations.Language
 
 /**
@@ -69,6 +71,32 @@ public abstract class JsonAdapter<T> {
     }
     return result
   }
+
+  /**
+   * Returns an iterator that decodes a stream of consecutive top-level JSON values from the given
+   * [source], one value per iteration. Iteration ends normally when only whitespace remains; a
+   * truncated or malformed value fails with a [JsonDataException] that carries the value's index
+   * and the original cause.
+   *
+   * The returned iterator borrows [source]: closing the iterator does **not** close [source], and
+   * the caller remains responsible for closing it.
+   */
+  @CheckReturnValue
+  public fun values(source: BufferedSource): JsonValueIterator<T> =
+    JsonValueIterator(this, JsonReader.of(source), ownsSource = false)
+
+  /**
+   * Returns an iterator that decodes a stream of consecutive top-level JSON values from the given
+   * [source], one value per iteration. Iteration ends normally when only whitespace remains; a
+   * truncated or malformed value fails with a [JsonDataException] that carries the value's index
+   * and the original cause.
+   *
+   * The returned iterator takes explicit ownership of [source]: it is buffered for reading and
+   * closed when the iterator is closed.
+   */
+  @CheckReturnValue
+  public fun values(source: Source): JsonValueIterator<T> =
+    JsonValueIterator(this, JsonReader.of(source.buffer()), ownsSource = true)
 
   /** Encodes the given [value] with the given [writer]. */
   @Throws(IOException::class) public abstract fun toJson(writer: JsonWriter, value: T)
